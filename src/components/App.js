@@ -33,8 +33,8 @@ class App extends Component {
     const networkData = Marketplace.networks[networkId]
     if (networkData) {
       const marketplace = web3.eth.Contract(Marketplace.abi, networkData.address)
+      this.setState({ marketplace}) //deployed smart contract
       this.setState({ loading: false})
-      this.setState({ marketplace})
     } else {
       window.alert('Marketplace contract not deployed to detected network.')
     }
@@ -49,6 +49,14 @@ class App extends Component {
       products: [],
       loading: true
     }
+    this.createProduct = this.createProduct.bind(this) //kad naudoti su react
+  }
+
+  createProduct(name, price) {
+    this.setState({ loading: true})
+    this.state.marketplace.methods.createProduct(name, price).send({ from: this.state.account }).once('receipt', (receipt) => {
+      this.setState({ loading: false})
+    })
   }
 
   render() {
@@ -58,7 +66,8 @@ class App extends Component {
         <div className="container-fluid mt-5">
           <div className="row">
             <main role="main" className="col-lg-12 d-flex">
-              <Main />
+              {this.state.loading ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div>
+              : <Main createProduct={this.createProduct} />}
             </main>
           </div>
         </div>
